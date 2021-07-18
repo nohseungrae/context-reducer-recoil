@@ -1,14 +1,16 @@
 import uuid from "uuid";
-import { ADD, DELETE } from "./types";
+import { ADD, COMPLETE, DELETE, UNCOMPLETE } from "./types";
 
 export type ToDos = { text?: string; id: string };
-interface State {
+export interface State {
   toDos: ToDos[];
+  completed: ToDos[];
 }
 type Action = { type: string; payload: string };
 
 export const initialState: State = {
   toDos: [],
+  completed: [],
 };
 export const reducer = (
   state: State = initialState,
@@ -16,9 +18,33 @@ export const reducer = (
 ) => {
   switch (type) {
     case ADD:
-      return { toDos: [...state.toDos, { text: payload, id: uuid.v4() }] };
+      return {
+        ...state,
+        toDos: [...state.toDos, { text: payload, id: uuid.v4() }],
+      };
     case DELETE:
-      return { toDos: state.toDos.filter((todo) => todo.id !== payload) };
+      return {
+        ...state,
+        toDos: state.toDos.filter((todo) => todo.id !== payload),
+      };
+    case COMPLETE:
+      const target: ToDos = state.toDos.find(
+        (todo) => todo.id === payload
+      ) as ToDos;
+      return {
+        ...state,
+        toDos: state.toDos.filter((toDo) => toDo.id !== payload),
+        completed: [...state.completed, { ...target }],
+      };
+    case UNCOMPLETE:
+      const aTarget: ToDos = state.completed.find(
+        (toDo) => toDo.id === payload
+      ) as ToDos;
+      return {
+        ...state,
+        completed: state.completed.filter((toDo) => toDo.id !== payload),
+        toDos: [...state.toDos, { ...aTarget }],
+      };
     default:
       return state;
   }

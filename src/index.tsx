@@ -2,13 +2,16 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { RecoilRoot } from "recoil";
 import App from "./components/app";
+import ToDosProvider from "./context";
 import reportWebVitals from "./reportWebVitals";
 
 ReactDOM.render(
   <React.StrictMode>
-    <RecoilRoot>
-      <App />
-    </RecoilRoot>
+    <ToDosProvider>
+      <RecoilRoot>
+        <App />
+      </RecoilRoot>
+    </ToDosProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );

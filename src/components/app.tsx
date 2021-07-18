@@ -2,20 +2,16 @@ import React, {
   ChangeEvent,
   MouseEvent,
   SyntheticEvent,
+  useContext,
   useReducer,
   useState,
 } from "react";
-import {
-  atom,
-  selector,
-  useRecoilState,
-  useRecoilValue,
-  useResetRecoilState,
-  useSetRecoilState,
-} from "recoil";
+import { atom, selector, useRecoilState } from "recoil";
 import { reducer, initialState, ToDos } from "../reducer";
 import uuid from "uuid";
-import { ADD, DELETE } from "../types";
+import { COMPLETE, DELETE, UNCOMPLETE } from "../types";
+import Add from "./add";
+import { ToDosContext, useDispatch } from "../context";
 
 const textState = atom({
   key: "textState", // unique ID (with respect to other atoms/selectors)
@@ -38,7 +34,9 @@ const todosSelector = selector<ToDos[]>({
 });
 
 const App = () => {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const { state } = useContext(ToDosContext);
+  const dispatch = useDispatch();
+  // const [state, dispatch] = useReducer(reducer, initialState);
   //
   const [text, setText] = useRecoilState(textState);
   const [toDos, setToDos] = useRecoilState(toDosState);
@@ -67,31 +65,66 @@ const App = () => {
     e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>,
     id: string
   ) => {
-    // dispatch({
-    //   type: DELETE,
-    //   payload: id,
-    // });
-    setToDos(toDos.filter((todo) => todo.id !== id));
+    dispatch({
+      type: DELETE,
+      payload: id,
+    });
+    // setToDos(toDos.filter((todo) => todo.id !== id));
   };
   return (
     <div>
-      <h1>Add To Do</h1>
-      <form onSubmit={onSubmit}>
-        <input
-          type={"text"}
-          onChange={onChange}
-          value={text}
-          placeholder={"Write To Dos"}
-        />
-      </form>
+      <Add />
       <ul>
         <h2>To Dos</h2>
-        {toDos.map((todo: ToDos) => (
-          <li key={todo.id}>
-            <span>{todo.text}</span>
-            <button onClick={(e) => onDelete(e, todo.id)}>X</button>
+        {state.toDos.map((toDo: any) => (
+          <li key={toDo.id}>
+            <span>{toDo.text}</span>
+            <span
+              role="img"
+              aria-label=""
+              onClick={(
+                e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
+              ) => onDelete(e, toDo.id)}
+            >
+              ❌
+            </span>
+            <span
+              onClick={() => dispatch({ type: COMPLETE, payload: toDo.id })}
+            >
+              ✅
+            </span>
           </li>
         ))}
+      </ul>
+      <ul>
+        {state.completed.length !== 0 && (
+          <>
+            <h2>Completed</h2>
+            {state.completed.map((toDo: any) => (
+              <li key={toDo.id}>
+                <span>{toDo.text}</span>
+                <span
+                  role="img"
+                  aria-label=""
+                  onClick={(
+                    e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
+                  ) => onDelete(e, toDo.id)}
+                >
+                  ❌
+                </span>
+                <span
+                  role="img"
+                  aria-label=""
+                  onClick={() =>
+                    dispatch({ type: UNCOMPLETE, payload: toDo.id })
+                  }
+                >
+                  🙅🏼‍♂️
+                </span>
+              </li>
+            ))}
+          </>
+        )}
       </ul>
     </div>
   );
